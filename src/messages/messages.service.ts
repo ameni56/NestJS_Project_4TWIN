@@ -33,14 +33,14 @@ findAll(){
 
 async findOneById(id: ObjectId): Promise<Message> {
     try {
-      const user = await this.messageRepository.findOneBy(id);
-      if (!user) {
-        throw new NotFoundException(`User with id ${id} not found`);
+      const message = await this.messageRepository.findOneBy(id);
+      if (!message) {
+        throw new NotFoundException(`Message with id ${id} not found`);
       }
-      return user;
+      return message;
     } catch (error) {
       console.error('Error during findOneById operation:', error);
-      throw new InternalServerErrorException('Failed to retrieve the user');
+      throw new InternalServerErrorException('Failed to retrieve the message');
     }
   }
   
