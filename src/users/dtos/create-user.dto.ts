@@ -14,4 +14,6 @@ password: string;
 
 @IsBoolean()
 active: boolean;
+@IsString()
+  role: string;
 }

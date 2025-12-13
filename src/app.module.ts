@@ -11,6 +11,9 @@ import { VehiculeModule } from './vehicule/vehicule.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Message } from './messages/message.entity';
 import { User } from './users/user.entity';
+import { AdminUserController } from './users/admin-user-controller.controller';
+import { ClientUserController } from './users/clinet-user-controller.controller';
+
 
 @Global()
 @Module({

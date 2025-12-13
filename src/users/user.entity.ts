@@ -1,5 +1,5 @@
 import { Entity, ObjectIdColumn, ObjectId, Column, BeforeInsert, AfterUpdate, AfterInsert, BeforeRemove, AfterLoad } from 'typeorm';
-import { IsString, IsEmail, IsBoolean } from "class-validator";
+import { IsString, IsEmail, IsBoolean, IsDate } from "class-validator";
 import { Logger } from '@nestjs/common';
 @Entity()
 export class User {
@@ -19,6 +19,18 @@ password: string;
 @Column({ default: false })
 @IsBoolean()
 active: boolean;
+
+@Column()
+@IsString()
+role: string;
+
+@Column()
+@IsDate()
+createdAt: Date;
+
+@Column()
+@IsDate()
+updatedAt: Date;
 
 @BeforeInsert()
 logInsert() {

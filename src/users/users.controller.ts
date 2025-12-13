@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query,Headers,Patch, Injectable, Delete } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query,Headers,Patch, Injectable, Delete, ParseIntPipe } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { ObjectId } from 'typeorm';
 import { updateUserDto } from './dtos/update-user.dto';
@@ -11,7 +11,7 @@ export class UsersController {
     constructor(private readonly userService:UsersService){}
 @Post()
 create(@Body() data:createUserDto){
-    return this.userService.createUser(data.email,data.password);
+    return this.userService.createUser(data.email,data.password,data.role);
 }
 @Get()
 findAll() {
@@ -52,7 +52,61 @@ findByActive() {
 
   }
 
-// }
+ @Get('role/:role')
+  async getUsersByRole(@Param('role') role: string) {
+    return this.userService.findUsersByRole(role);
+  }
+  @Get('/inactive')
+  async getInactiveUsers() {
+    return this.userService.findInactiveUsers();
+  }
+  @Get('domain/:domain')//tester avec http://localhost:3000/users/domain/gmail.com
+  async getUsersByDomain(@Param('domain') domain: string) {
+    return this.userService.findUsersByDomain(domain);
+  }
+
+ @Get('/recent')
+  async getRecentUsers() {
+    return this.userService.findRecentUsers();
+  }
+ @Get('/count-by-role')
+  async getCountByRole() {
+    return this.userService.countUsersByRole();
+  }
+
+ @Get('/date-range')//tester avec localhost:3000/users/date-range?start=2025-12-07&end=2025-12-10
+  async getUsersByDateRange(
+    @Query('start') start: string,
+    @Query('end') end: string,
+  ) {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    return this.userService.findUsersByDateRange(startDate, endDate);
+  }
+  @Get('/recent-limit')//localhost:3000/users/recent-limit?limit=2
+  async getRecentUsersLimit(@Query('limit', ParseIntPipe) limit: number){
+    return this.userService.findRecentUsersLimit(limit);
+  }
+
+ @Get('/average-time')
+  async getAverageTimeBetweenCreateAndUpdate() {
+    return this.userService.calculateAverageTimeBetweenCreateAndUpdate();
+  }
+@Get('/paginated')//localhost:3000/users/paginated?page=2&limit=3
+async getPaginatedUsers(
+  @Query('page', ParseIntPipe) page: number,
+  @Query('limit', ParseIntPipe) limit: number,
+) {
+  return this.userService.findPaginatedUsers(page, limit);
+}
+@Get('/sorted')
+  async getSortedUsers() {
+    return this.userService.findSortedUsers();
+  }
+@Get('/multi-sorted')
+  async getUsersWithMultipleSorting() {
+    return this.userService.findUsersWithMultipleSorting();
+  }
 //     users = [
 // { id: 1, username: 'Mohamed', email: 'mohamed@esprit.tn', status: 'active' },
 // { id: 2, username: 'Sarra', email: 'sarra@esprit.tn', status: 'inactive' },

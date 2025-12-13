@@ -12,11 +12,12 @@ constructor(@InjectRepository(User) private userRepository:MongoRepository<User>
 
 
 
-async createUser(email:string,password:string):Promise<User>{
+async createUser(email:string,password:string,role:string):Promise<User>{
     try{
+        const now = new Date();
 
     
-    const user= this.userRepository.create({email,password,active:true});
+    const user= this.userRepository.create({email,password,role,createdAt:now,updatedAt:now,active:true});
     await this.userRepository.save(user);
     return user;
     }
@@ -135,6 +136,80 @@ throw new InternalServerErrorException('Échec de l’activation du compte');
 }
 }
 
+async findUsersByRole(role: string) {
+return await this.userRepository.find({
+select: role === 'admin' ? ['id', 'email', 'role', 'createdAt',
+'updatedAt'] : ['id', 'email']
+});
+}
+
+async findInactiveUsers() {
+const sixMonthsAgo = new Date();
+sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+return await this.userRepository.find({
+where: { updatedAt: { $lt: sixMonthsAgo } }
+});
+}
+
+
+async findUsersByDomain(domain: string) {
+return await this.userRepository.find({ where: { email: { $regex:
+`@${domain}$` } } });
+}
+
+async findRecentUsers() {
+const sevenDaysAgo = new Date();
+sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+return await this.userRepository.find({ where: { createdAt: { $gte:
+sevenDaysAgo } } });
+}
+
+async countUsersByRole() {
+return await this.userRepository.aggregate([
+{ $group: { _id: "$role", count: { $sum: 1 } } }
+]).toArray();
+}
+
+async findUsersByDateRange(startDate: Date, endDate: Date) {
+return await this.userRepository.find({ where: { createdAt: { $gte:
+startDate, $lte: endDate } } });
+}
+
+async findRecentUsersLimit(limit: number): Promise<User[]> {
+return await this.userRepository.find({
+order: { createdAt: 'DESC' },
+take: limit,
+});
+}
+
+async calculateAverageTimeBetweenCreateAndUpdate(): Promise<any> {
+const result = await this.userRepository.aggregate([
+{
+$project: {
+timeDiffInDays: {
+$divide: [
+{ $subtract: ['$updatedAt', '$createdAt'] },
+1000 * 60 * 60 * 24,],},},},
+{ $group: { _id: null, averageDays: { $avg: '$timeDiffInDays' } } },
+]).toArray();
+return result[0]['averageDays'] || 0;
+}
+
+async findPaginatedUsers(page: number, limit: number) {
+return await this.userRepository.find({
+skip: (page - 1) * limit,
+take: limit });
+}
+
+async findSortedUsers() {
+return await this.userRepository.find({ order: { createdAt:
+'DESC' } });
+}
+async findUsersWithMultipleSorting(): Promise<User[]> {
+return await this.userRepository.find({
+order: { role: 'ASC', createdAt: 'DESC' },
+});
+}
 }
 
 
