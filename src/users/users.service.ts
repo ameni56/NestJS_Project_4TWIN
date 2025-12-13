@@ -4,6 +4,8 @@ import { ObjectId } from 'mongodb';
 
 import { User } from 'src/users/user.entity';
 import { MongoRepository } from 'typeorm';
+import { createUserDto } from './dtos/create-user.dto';
+import { updateUserDto } from './dtos/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -210,6 +212,48 @@ return await this.userRepository.find({
 order: { role: 'ASC', createdAt: 'DESC' },
 });
 }
+
+//Partie 4 
+async createUserDoublon(userDto: createUserDto) {
+const existingUser = await this.userRepository.findOne({ where:
+{ email: userDto.email } });
+if (existingUser) {
+throw new Error('Un utilisateur avec cet email existe déjà.');
+}
+const user = this.userRepository.create(userDto);
+return await this.userRepository.save(user);
+}
+
+
+async updateUser(idUser: ObjectId, attrs: Partial<User>): Promise<User> {
+  const existingUser = await this.findOneById(idUser);
+  if (!existingUser) {
+    throw new Error('Utilisateur non trouvé');
+  }
+
+  const updatedUser = { ...existingUser, ...attrs, updatedAt: new Date() };
+
+  await this.userRepository.update(idUser, updatedUser);
+
+  console.log(`Utilisateur ${idUser} mis à jour :`, attrs);
+  return this.findOneById(idUser);
+}
+
+async deactivateOldAccounts(): Promise<void> {
+const oneYearAgo = new Date();
+oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+await this.userRepository.updateMany(
+{ updatedAt: { $lte: oneYearAgo } },
+{ $set: { active: false } }
+);
+}
+
+async updateUsersRoleByDomain(domain: string, newRole: string) {
+return await this.userRepository.updateMany(
+{ email: { $regex: `@${domain}$` } },
+{ $set: { role: newRole } }
+); }
+
 }
 
 

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query,Headers,Patch, Injectable, Delete, ParseIntPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query,Headers,Patch, Injectable, Delete, ParseIntPipe, BadRequestException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { ObjectId } from 'typeorm';
 import { updateUserDto } from './dtos/update-user.dto';
@@ -107,6 +107,33 @@ async getPaginatedUsers(
   async getUsersWithMultipleSorting() {
     return this.userService.findUsersWithMultipleSorting();
   }
+//Partie 4 
+ @Post('/doublon')
+  async createDoublon(@Body() data: createUserDto) {
+    try {
+      return await this.userService.createUserDoublon(data);
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+@Patch('/updateUserNonTrouve/:id')
+   updateUserNonTrouve(
+    @Param('id') id: ObjectId,
+    @Body() attrs: updateUserDto,
+  ) {
+   
+    return this.userService.updateUser(id, attrs);
+  }
+@Patch('/deactivate-old-accounts')
+   deactivateOldAccounts() {
+    this.userService.deactivateOldAccounts();
+  }
+ @Patch('/update-role-by-domain')
+  updateUsersRoleByDomain(@Body() data ) {
+    this.userService.updateUsersRoleByDomain(data.domain, data.newRole);
+  }
+
+
 //     users = [
 // { id: 1, username: 'Mohamed', email: 'mohamed@esprit.tn', status: 'active' },
 // { id: 2, username: 'Sarra', email: 'sarra@esprit.tn', status: 'inactive' },
