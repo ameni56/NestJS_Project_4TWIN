@@ -13,6 +13,8 @@ import { Message } from './messages/message.entity';
 import { User } from './users/user.entity';
 import { AdminUserController } from './users/admin-user-controller.controller';
 import { ClientUserController } from './users/clinet-user-controller.controller';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 
 @Global()
@@ -27,7 +29,10 @@ entities: [Message,User],
 synchronize: true, 
 }),
     
-    MessagesModule, UsersModule, MoteurModule, GenerateurModule, PhareModule, AudioModule, VehiculeModule],
+    MessagesModule, UsersModule, MoteurModule, GenerateurModule, PhareModule, AudioModule, VehiculeModule,
+  ServeStaticModule.forRoot({
+rootPath: join(__dirname, '..', 'public'),
+}),],
   controllers: [AppController],
   providers: [AppService],
 })
